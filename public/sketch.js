@@ -2,7 +2,6 @@ let p;
 var b;
 var balls = [];
 var socket;
-var lastPos;
 var go = false;
 var counter = 0;
 var players = [];
@@ -12,56 +11,13 @@ function setup(){
     socket = io.connect("http://localhost:3000");
     createCanvas(750,600); //Cria a interface do jogo
 
-    //Primeiro evento emitido pelo servidor, alertando o numero de conexões
-    //e com base nela, o player é criado
-    socket.on('getCounter', (data) => {
-      counter = data.connectionsLength;
-      if(p === undefined) {
-        if(counter % 2 === 0)
-          p = new Player(0);
-        else
-          p = new Player(width);
-      }
-      
-      var data = {
-        x: p.x,
-        y: p.y,
-        v: p.v,
-        w: p.w,
-        h: p.h,
-        p: p.p,
-      }
-
-      //Envia os dados do player criado para o servidor
-      socket.emit('start', data);
-      go = false;
-
-      //Caso haja 2 players, o game é iniciado
-      if(counter == 2) {
-        const elem = document.getElementById("userMessage");
-        let time = 3;
-
-        const timeoutId = setInterval(() => {
-          elem.textContent = `O JOGO INICIARÁ EM: ${time}`
-          time--;
-        }, 1000);
-
-        setTimeout(() => {
-          clearTimeout(timeoutId);
-          go = true;
-          elem.textContent = ''
-        }, 4000);
-      }
-
-      update(); //atualiza o servidor novamente dos dados do player
-    });
+    setupGame(socket);
     
     //Recebe os dados atuais dos players do server, para posicionar a posição
     //do adversário
     socket.on('heartBeat', (data) => {
       players = data;
     });
-
 
     //Recebe as coordenadas da bola e a desenha nos clients
     socket.on('showBallGame', (data) => {
@@ -86,9 +42,55 @@ function setup(){
       elem.textContent = `OPONENTE DESCONECTADO! INICIANDO UM NOVO LOBBY...`
 
       setTimeout(() => {
-        window.location.reload();
+        setupGame(socket);
       }, 4000);
     });
+}
+
+function setupGame(socket) {
+  //Primeiro evento emitido pelo servidor, alertando o numero de conexões
+  //e com base nela, o player é criado
+  socket.on('getCounter', (data) => {
+    counter = data.connectionsLength;
+    if(p === undefined) {
+      if(counter % 2 === 0)
+        p = new Player(0);
+      else
+        p = new Player(width);
+    }
+    
+    var data = {
+      x: p.x,
+      y: p.y,
+      v: p.v,
+      w: p.w,
+      h: p.h,
+      p: p.p,
+    }
+
+    //Envia os dados do player criado para o servidor
+    socket.emit('start', data);
+    go = false;
+
+    //Caso haja 2 players, o game é iniciado
+    if(counter == 2) {
+      const elem = document.getElementById("userMessage");
+      let time = 3;
+
+      const timeoutId = setInterval(() => {
+        elem.textContent = `O JOGO INICIARÁ EM: ${time}`
+        time--;
+      }, 1000);
+
+      setTimeout(() => {
+        clearTimeout(timeoutId);
+        go = true;
+        elem.textContent = ''
+      }, 4000);
+    }
+
+    update(); //atualiza o servidor novamente dos dados do player
+  });
 }
 
 function restartGame() {

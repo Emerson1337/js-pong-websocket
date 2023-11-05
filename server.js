@@ -89,10 +89,11 @@ io.on('connection', (socket) => {
   //Monitora o evento disconnect e avisa aos clients sobre a desconexão de um 
   // player, resetando a partida (minimo de players: 2)
   socket.on('disconnect', () => {
-    connections = [];
-    players = [];
-    console.log('Cliente desconectado!');
     io.sockets.emit('reset');
+    players = players.filter(player => player.id !== socket.id); 
+    connections = connections.filter(connection => connection.id !== socket.id); 
+
+    console.log('Cliente desconectado!');
   });
 
   //Monitora o evento start e salva os estados dos usuários
