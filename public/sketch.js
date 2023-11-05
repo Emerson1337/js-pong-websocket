@@ -9,9 +9,12 @@ var counter = 0;
 var players = [];
 
 function setup(){
+    //Inicia conexão com o servidor
     socket = io.connect("http://localhost:3000");
-    createCanvas(750,600);
+    createCanvas(750,600); //Cria a interface do jogo
 
+    //Primeiro evento emitido pelo servidor, alertando o numero de conexões
+    //e com base nela, o player é criado
     socket.on('getCounter', (data) => {
       counter = data.connectionsLength;
       if(p === undefined) {
@@ -20,6 +23,7 @@ function setup(){
         else
           p = new Player(width);
       }
+      
       var data = {
         x: p.x,
         y: p.y,
@@ -29,8 +33,11 @@ function setup(){
         p: p.p,
       }
 
+      //Envia os dados do player criado para o servidor
       socket.emit('start', data);
       go = false;
+
+      //Caso haja 2 players, o game é iniciado
       if(counter == 2) {
         const elem = document.getElementById("userMessage");
         let time = 3;
@@ -47,18 +54,24 @@ function setup(){
         }, 4000);
       }
 
-      update();
+      update(); //atualiza o servidor novamente dos dados do player
     });
     
+    //Recebe os dados atuais dos players do server, para posicionar a posição
+    //do adversário
     socket.on('heartBeat', (data) => {
       players = data;
     });
 
+
+    //Recebe as coordenadas da bola e a desenha nos clients
     socket.on('showBallGame', (data) => {
       b = new Ball(data);
       b.show()
     });
 
+    //Valida se o usuário que está tentando se conectar tentou entrar
+    //em uma partida full (com 2 players já conectados)
     socket.on('connectionFull', (data) => {
       if(data.socketId === socket.id) {
         const elem = document.getElementById("userMessage");
@@ -66,6 +79,8 @@ function setup(){
       }
     });
 
+    //Reinicia o jogo caso o oponente se desconecte, tornano o servidor livre p/
+    //entrada de um novo oponente
     socket.on('reset', () => {
       console.log('RESET!!');
       const elem = document.getElementById("userMessage");
@@ -78,9 +93,10 @@ function setup(){
 }
 
 function restartGame() {
-  socket.emit('restart');
+  socket.emit('restart'); //Solicita o servidor para reiniciar o jogo
 }
 
+//Função chamada pelo canvas a cada movimento do mouse
 function draw(){
     background(0);
     rect(width/2,0,10,600)
@@ -89,9 +105,10 @@ function draw(){
     if(go === true) {
       p.show();
       p.move();
-      socket.emit('show_ball');
-      socket.emit('move_ball');
+      socket.emit('show_ball'); //Solicita que as informações da bola sejam enviadas ao client
+      socket.emit('move_ball'); //Solicita que a bola mova-se
       players.map(player => {
+        //Informa para onde deseja movimentar a bola em caso de colisão da barra com a bola
         if(b.collision(player))
           if(player.x == 0)
             socket.emit('move_ball', {xv: 1});
@@ -110,6 +127,7 @@ function draw(){
     }
 }
 
+//Atualiza o servidor com os dados do player do client
 function update() {
   var data = {
     x: p.x,
@@ -122,27 +140,3 @@ function update() {
 
   socket.emit('update', data);
 }
-
-
-// function throwBall(){
-//     if(balls.length > 0)
-//       b = balls.pop();
-//     else {
-//       showWinner();
-//       alert("Do you want to play again?");
-//       window.location.reload();
-//     }
-// }
-
-// function showWinner(){
-//   background(0);
-//   textSize(80);
-//   fill(0, 102, 153);
-//   if(p.points > a.points)
-//     text("YOU WIN", width/2 - 100, height/2);
-//   else if(a.points > p.points)
-//     text("YOU LOSE", width/2 - 100, height/2);
-//   else
-//     text("TIE", width/2 -100, height/2);
-
-// }
