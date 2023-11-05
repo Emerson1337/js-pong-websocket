@@ -1,5 +1,4 @@
-function Player(id, x){
-   this.id = id;
+function Player(x){
    this.x = x;
    this.y = height/2;
    this.velocityy = 4;

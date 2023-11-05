@@ -16,9 +16,9 @@ function setup(){
       counter = data.connectionsLength;
       if(p === undefined) {
         if(counter % 2 === 0)
-          p = new Player(data.socketId, 0);
+          p = new Player(0);
         else
-          p = new Player(data.socketId, width);
+          p = new Player(width);
       }
       var data = {
         x: p.x,
