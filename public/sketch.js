@@ -2,7 +2,6 @@ let p;
 var b;
 var balls = [];
 var socket;
-// var a;
 var lastPos;
 var go = false;
 var counter = 0;
