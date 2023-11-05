@@ -3,9 +3,27 @@
   <head>
     <meta charset="UTF-8">
     <title>PONG</title>
+    <style>
+      span#userMessage {
+        position: fixed;
+        top: 310px;
+        left: 160px;
+        font-size: 30px;
+        color: green;
+        font-weight: bold;
+        font-family: 'Roboto';
+        width: 535px;
+      }
+
+      #restartButton {
+        position: fixed;
+        top: 0;
+      }
+    </style>
   </head>
   <body>
-    <button onclick="restartGame()">Restart game</button>
+    <button id="restartButton" onclick="restartGame()">Restart game</button>
+    <span id="userMessage">AGUARDANDO OPONENTE!</span>
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
     <script src="libraries/p5.js" type="text/javascript"></script>
     <script src="libraries/p5.dom.js" type="text/javascript"></script>

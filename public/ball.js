@@ -9,11 +9,9 @@ function Ball({
   var r = floor(random(2));
   this.xv = xv;
   this.yv = yv;
-  this.isShown = false;
 
   this.show = function(){
     ellipse(this.x,this.y,15,15);
-    this.isShown = true;
   }
 
   this.restart = function(){
@@ -45,5 +43,5 @@ function Ball({
       }
       else
         return false;
-    }
+  }
 }

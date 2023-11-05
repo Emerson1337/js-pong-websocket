@@ -1,4 +1,4 @@
-var p;
+let p;
 var b;
 var balls = [];
 var socket;
@@ -11,14 +11,15 @@ var players = [];
 function setup(){
     socket = io.connect("http://localhost:3000");
     createCanvas(750,600);
+
     socket.on('getCounter', (data) => {
-      counter = data;
+      counter = data.connectionsLength;
       if(p === undefined) {
         if(counter % 2 === 0)
-          p = new Player(0);
+          p = new Player(data.socketId, 0);
         else
-          p = new Player(width);
-      } 
+          p = new Player(data.socketId, width);
+      }
       var data = {
         x: p.x,
         y: p.y,
@@ -27,14 +28,26 @@ function setup(){
         h: p.h,
         p: p.p,
       }
-  
+
       socket.emit('start', data);
-      
+      go = false;
       if(counter == 2) {
-        go = true;
+        const elem = document.getElementById("userMessage");
+        let time = 3;
+
+        const timeoutId = setInterval(() => {
+          elem.textContent = `O JOGO INICIARÁ EM: ${time}`
+          time--;
+        }, 1000);
+
+        setTimeout(() => {
+          clearTimeout(timeoutId);
+          go = true;
+          elem.textContent = ''
+        }, 4000);
       }
 
-      test();
+      update();
     });
     
     socket.on('heartBeat', (data) => {
@@ -44,6 +57,23 @@ function setup(){
     socket.on('showBallGame', (data) => {
       b = new Ball(data);
       b.show()
+    });
+
+    socket.on('connectionFull', (data) => {
+      if(data.socketId === socket.id) {
+        const elem = document.getElementById("userMessage");
+        elem.textContent = `O SERVIDOR SUPORTA NO MÁXIMO 2 JOGADORES E AGORA ESTÁ LOTADO. TENTE NOVAMENTE MAIS TARDE!`
+      }
+    });
+
+    socket.on('reset', () => {
+      console.log('RESET!!');
+      const elem = document.getElementById("userMessage");
+      elem.textContent = `OPONENTE DESCONECTADO! INICIANDO UM NOVO LOBBY...`
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 4000);
     });
 }
 
@@ -56,8 +86,6 @@ function draw(){
     rect(width/2,0,10,600)
     textSize(48);
     fill(0, 102, 153);
-    // text(p.points, 30, 40);
-    // text(a.points, width - 80, 40);
     if(go === true) {
       p.show();
       p.move();
@@ -78,11 +106,11 @@ function draw(){
         }
       });
 
-      test();
+      update();
     }
 }
 
-function test() {
+function update() {
   var data = {
     x: p.x,
     y: p.y,
