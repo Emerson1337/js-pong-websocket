@@ -141,4 +141,8 @@ io.on('connection', (socket) => {
   socket.on('connect_error', (error) => {
     console.error('Connection Error:', error);
   });
+
+  socket.on("ping", (callback) => {
+    callback();
+  });
 })

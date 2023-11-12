@@ -12,7 +12,8 @@ function setup(){
     createCanvas(750,600); //Cria a interface do jogo
 
     setupGame(socket);
-    
+    latency(socket);
+
     //Recebe os dados atuais dos players do server, para posicionar a posição
     //do adversário
     socket.on('heartBeat', (data) => {
@@ -45,6 +46,18 @@ function setup(){
         setupGame(socket);
       }, 4000);
     });
+}
+
+function latency(socket) {
+  setInterval(() => {
+    const start = Date.now();
+  
+    socket.emit("ping", () => {
+      const duration = Date.now() - start;
+      const elem = document.getElementById("latency");
+      elem.textContent = ` ${duration}ms`
+    });
+  }, 1000);
 }
 
 function setupGame(socket) {
